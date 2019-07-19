@@ -34,7 +34,7 @@ const server = express()
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.sendFile(path.join(__dirname + '/build/index.html'))
   })
-  .listen(process.env.PORT, () => console.log(`Listening on ${process.env.PORT}`))
+  .listen(process.env.PORT || 3000, () => console.log(`Listening on ${process.env.PORT || 3000}`))
 
 const io = require('socket.io')(server);
 
@@ -47,7 +47,6 @@ const rand = (max, min) => {
 
 const ready = {}
 const games = {}
-const players = {}
 
 const deal = () => {
   const game = []
@@ -61,7 +60,8 @@ const deal = () => {
   return game
 }
 
-const draw = (gameId) => {
+const draw = (client) => {
+  const gameId = client.gameId
   const game = games[gameId].game
   const card = game[rand(game.length)]
 
@@ -71,13 +71,19 @@ const draw = (gameId) => {
 }
 
 io.on('connection', client => {
+
   client.emit('ping', client.id)
+
   client.on('ready', () => {
     if (Object.values(ready).length > 0) {
-      const p1 = client
       const p2 = Object.values(ready)[0]
       delete ready[p2.id]
-      const gameId = p1.id
+
+      const p1 = client
+      const gameId = Date.now() + rand(1000)
+
+      p1.gameId = gameId
+      p2.gameId = gameId
 
       games[gameId] = {
         players: [
@@ -102,26 +108,49 @@ io.on('connection', client => {
     }
   })
 
-  client.on('drawHand', gameId => {
+  client.on('drawHand', () => {
     const hand = []
-    for (let i = 0; i < 4; i++) { hand.push(draw(gameId)) }
+    for (let i = 0; i < 4; i++) { hand.push(draw(client)) }
     client.emit('hand', hand)
   })
 
-  client.on('drawCard', gameId => {
-    client.emit('card', draw(gameId))
-    console.log(games[gameId].game.length)
+  client.on('drawCard', () => {
+    client.emit('card', draw(client))
   })
 
-  client.on('endTurn', ({ gameId, discard }) => {
-    let turn = games[gameId].turn + 1
-    if (turn > 2) {
+  client.on('takeDiscard', () => {
+    const gameId = client.gameId
+    games[gameId].players.forEach(p => p && p.emit('emptyDiscard'))
+  })
+
+  client.on('endTurn', ({ discard, points }) => {
+    const gameId = client.gameId
+    const game = games[gameId]
+    let turn = game.turn
+
+    game.players[turn].points = points
+
+    if (++turn > 2) {
       turn = 1
     }
-    const game = games[gameId]
+
     game.turn = turn
     game.players[turn].emit('turn')
-    games[gameId].players.forEach(p => p && p.emit('discard', discard))
+    discard && game.players.forEach(p => p && p.emit('discard', discard))
+  })
+
+  client.on('endGame', () => {
+    let winner = 0
+    let minPoints = null
+
+    const gameId = client.gameId
+    const players = games[gameId].players
+
+    players.forEach((p, i) => {
+      winner = !minPoints || p.points < minPoints ? i : winner
+    })
+
+    players.forEach(p => p && p.emit('winner', players[winner].points))
   })
 
   client.on('disconnect', () => {

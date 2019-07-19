@@ -15,7 +15,9 @@ class App extends Component {
       selected: {},
       start: true,
       loading: false,
-      turn: false
+      turn: false,
+      end: false,
+      result: null,
     }
 
     this.ss = async (params) => {
@@ -34,7 +36,7 @@ class App extends Component {
 
     client.on('go', id => {
       this.gameId = id
-      client.emit('drawHand', id)
+      client.emit('drawHand')
       this.ss({ loading: false })
     })
 
@@ -47,7 +49,12 @@ class App extends Component {
     })
 
     client.on('turn', () => {
-      this.ss({ turn: true })
+      if (this.state.end) {
+        this.client.emit('endGame')
+      }
+      else {
+        this.ss({ turn: true })
+      }
     })
 
     client.on('discard', discard => {
@@ -56,6 +63,19 @@ class App extends Component {
 
     client.on('hide', () => {
       this.ss({ hide: true })
+    })
+
+    client.on('emptyDiscard', () => {
+      this.ss({ discard: null })
+    })
+
+    client.on('winner', points => {
+      if (this.countPoints() > points) {
+        this.ss({ result: 'LOSE' })
+      }
+      else {
+        this.ss({ result: 'WIN' })
+      }
     })
 
     this.client = client
@@ -67,55 +87,100 @@ class App extends Component {
   }
 
   async draw() {
-    if (!this.state.turn) { return }
-
     this.ss({ draw: true })
-    this.client.emit('drawCard', this.gameId)
+    this.client.emit('drawCard')
   }
 
-  async throw() {
-    if (!this.state.turn) { return }
+  countPoints() {
+    return this.state.hand.reduce((count, c) => Number(c.split('/')[0]), 0)
+  }
 
+  async endTurn(discard) {
     await this.ss({
       draw: false,
       turn: false
     })
 
-    this.client.emit('endTurn', { gameId: this.gameId, discard: this.state.currentCard })
+    this.client.emit('endTurn', {
+      discard,
+      points: this.countPoints(),
+    })
+  }
+
+  async throw() {
+    if (!this.state.turn) { return }
+    this.endTurn(this.state.currentCard)
   }
 
   async onCardClick(card, index) {
     if (this.state.draw) {
-      const hand = this.state.hand
+      const hand = [...this.state.hand]
       hand[index] = this.state.currentCard
 
       this.ss({
-        draw: false,
         hand,
-        turn: false,
       })
 
-      this.client.emit('endTurn', { gameId: this.gameId, discard: card })
+      this.endTurn(card)
     }
     else {
-      this.ss({ selected: this.state.selected.card === card ? {} : { index, card } })
+      const selected = { ...this.state.selected }
+
+      if (selected[index]) {
+        delete selected[index]
+      }
+      else {
+        selected[index] = card
+      }
+
+      this.ss({ selected })
     }
   }
 
-  takeDiscard() {
-    if (!this.state.turn || !this.state.discard) { return }
+  clickDiscard() {
+    if (!this.state.discard) { return }
 
-    this.ss({
-      draw: true,
-      currentCard: this.state.discard,
+    if (this.state.turn && Object.values(this.state.selected).length === 0) {
+      this.ss({
+        draw: true,
+        currentCard: this.state.discard,
+      })
+
+      this.client.emit('takeDiscard')
+    }
+    else {
+      this.match()
+    }
+  }
+
+  match() {
+    let count = 0
+    let hand = [...this.state.hand]
+    const matchNumber = Number(this.state.discard.split('/')[0])
+
+    Object.keys(this.state.selected).forEach(id => {
+      const card = this.state.selected[id]
+      const cardValue = Number(card.split('/')[0])
+
+      count += cardValue
+      hand = hand.filter(c => c !== card)
     })
+
+    if (count === matchNumber) {
+      this.ss({ hand, selected: {} })
+    }
+  }
+
+  end() {
+    this.ss({ end: true })
+    this.endTurn()
   }
 
   renderDiscard() {
     if (this.state.draw) {
       return <button onClick={() => this.throw()}>THROW</button>
     }
-    return <div className="card" onClick={() => this.takeDiscard()}>{this.state.discard}</div>
+    return <div className="card" onClick={() => this.clickDiscard()}>{this.state.discard}</div>
   }
 
   render = () => (
@@ -129,14 +194,19 @@ class App extends Component {
       {this.state.turn &&
         <h1>Your Turn !</h1>
       }
+      {this.state.result &&
+        <h1>{this.state.result}</h1>
+      }
       {!this.state.start && !this.state.loading &&
         <div className="game">
           <div className="game_actions">
-            <button disabled={this.state.draw} onClick={() => this.draw()}>DRAW</button>
+            <button disabled={!this.state.turn} onClick={() => this.end()}>COBO</button>
+            <button disabled={this.state.draw || !this.state.turn} onClick={() => this.draw()}>DRAW</button>
             {this.renderDiscard()}
           </div>
           <div className="player_game">
-            {this.state.hand.map((c, i) => <div className={`card ${i < 2 || this.state.hide ? 'hide' : ''} ${this.state.selected.card === c ? 'selected' : ''}`} key={i} onClick={() => this.onCardClick(c, i)}><div>{c}</div></div>)}
+            {this.state.hand.map((c, i) =>
+              <div className={`card ${i < 2 || this.state.hide ? 'hide' : ''} ${this.state.selected[i] ? 'selected' : ''}`} key={i} onClick={() => this.onCardClick(c, i)}><div>{c}</div></div>)}
           </div>
           {this.state.draw &&
             <div className="card drawnCard">{this.state.currentCard}</div>
