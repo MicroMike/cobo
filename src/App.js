@@ -136,7 +136,7 @@ class App extends Component {
             {this.renderDiscard()}
           </div>
           <div className="player_game">
-            {this.state.hand.map((c, i) => <div className={`card ${this.state.hide ? 'hide' : ''} ${this.state.selected.card === c ? 'selected' : ''}`} key={i} onClick={() => this.onCardClick(c, i)}><div>{c}</div></div>)}
+            {this.state.hand.map((c, i) => <div className={`card ${i < 2 || this.state.hide ? 'hide' : ''} ${this.state.selected.card === c ? 'selected' : ''}`} key={i} onClick={() => this.onCardClick(c, i)}><div>{c}</div></div>)}
           </div>
           {this.state.draw &&
             <div className="card drawnCard">{this.state.currentCard}</div>
