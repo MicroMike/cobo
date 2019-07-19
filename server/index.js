@@ -10,27 +10,33 @@ const handler = (req, res) => {
   }
 }
 
+// const app = express();
+// const io = require('socket.io')(app);
+// const bodyParser = require('body-parser');
+
+// app.use(bodyParser.json()); // support json encoded bodies
+// app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
+// // Put all API endpoints under '/api'
+// app.use('/api/*', handler);
+
+// // Serve static files from the React frontend app
+// app.use(express.static(path.join(__dirname, 'build')))
+
+// // Anything that doesn't match the above, send back index.html
+// app.get('*', (req, res) => {
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   res.sendFile(path.join(__dirname + '/build/index.html'))
+// })
+
 const express = require('express');
 const path = require('path');
-const app = express();
-const io = require('socket.io')(app);
-const bodyParser = require('body-parser');
 
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+const server = express()
+  .use(express.static(path.join(__dirname, 'build')))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
-// Put all API endpoints under '/api'
-app.use('/api/*', handler);
-
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, 'build')))
-
-// Anything that doesn't match the above, send back index.html
-app.get('*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.sendFile(path.join(__dirname + '/build/index.html'))
-})
-
+const io = require('socket.io')(server);
 
 const nbCard = 13
 const nbSign = ['A', 'B', 'C', 'D']
