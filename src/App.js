@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import socket from 'socket.io-client'
 
-const client = socket('https://127.0.0.1:' + 5000);
+const client = socket('https://g-cobo.herokuapp.com:' + 5000);
 
 class App extends Component {
   constructor(props) {
