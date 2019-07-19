@@ -126,5 +126,3 @@ io.on('connection', client => {
     delete ready[client.id]
   })
 })
-
-app.listen(process.env.PORT || 5000);
