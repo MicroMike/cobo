@@ -16,12 +16,10 @@
   "scripts": {
     "push": "git add . && git commit -m 'c' && git push",
     "dev": "concurrently \"npm run start\" \"cd server && nodemon index\"",
-    "start:dev": "concurrently \"react-scripts start\" \"node server/index\"",
-    "start": "react-scripts start",
+    "start": "concurrently \"react-scripts start\" \"node server/index\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "heroku-postbuild": "node server/index"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
