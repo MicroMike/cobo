@@ -26,7 +26,7 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    const client = socket('http://localhost:' + (process.env.PORT || 5000));
+    const client = socket();
 
     client.on('ping', id => {
       this.clientId = id

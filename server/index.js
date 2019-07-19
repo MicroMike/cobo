@@ -9,27 +9,7 @@ const handler = (req, res) => {
       return res.end(JSON.stringify({}));
   }
 }
-
-const express = require('express');
-const path = require('path');
-const app = express();
-const bodyParser = require('body-parser');
-
-app.use(bodyParser.json()); // support json encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
-
-// Put all API endpoints under '/api'
-app.use('/api/*', handler);
-
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, 'build')))
-
-// Anything that doesn't match the above, send back index.html
-app.get('*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.sendFile(path.join(__dirname + '/build/index.html'))
-})
-
+const app = require('http').createServer(handler)
 const io = require('socket.io')(app);
 
 const nbCard = 13
@@ -121,4 +101,4 @@ io.on('connection', client => {
   })
 })
 
-app.listen(process.env.PORT || 5000);
+app.listen(5000);
