@@ -17,7 +17,6 @@
     "push": "git add . && git commit -m 'c' && git push",
     "dev": "concurrently \"npm run start\" \"cd server && nodemon index\"",
     "start": "concurrently \"react-scripts start\" \"node server/index\"",
-    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
