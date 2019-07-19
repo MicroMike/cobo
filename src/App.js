@@ -26,8 +26,12 @@ class App extends Component {
       this.ss({ hand })
     })
 
-    client.on('turn', hand => {
+    client.on('turn', () => {
       this.ss({ turn: true })
+    })
+
+    client.on('discard', discard => {
+      this.ss({ discard })
     })
 
     this.state = {
@@ -69,11 +73,10 @@ class App extends Component {
 
     await this.ss({
       draw: false,
-      discard: this.state.currentCard,
       turn: false
     })
 
-    client.emit('endTurn', this.gameId)
+    client.emit('endTurn', { gameId: this.gameId, discard: this.state.currentCard })
   }
 
   async onCardClick(card, index) {
@@ -84,8 +87,10 @@ class App extends Component {
       this.ss({
         draw: false,
         hand,
-        discard: card
+        turn: false,
       })
+
+      client.emit('endTurn', { gameId: this.gameId, discard: card })
     }
     else {
       this.ss({ selected: this.state.selected.card === card ? {} : { index, card } })
@@ -129,7 +134,7 @@ class App extends Component {
             {this.state.hand.map((c, i) => <div className={`card ${this.state.hide ? 'hide' : ''} ${this.state.selected.card === c ? 'selected' : ''}`} key={i} onClick={() => this.onCardClick(c, i)}><div>{c}</div></div>)}
           </div>
           {this.state.draw &&
-            <div className="drawnCard">{this.state.currentCard}</div>
+            <div className="card drawnCard">{this.state.currentCard}</div>
           }
         </div>
       }

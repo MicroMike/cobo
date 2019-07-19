@@ -51,17 +51,20 @@ io.on('connection', client => {
       const p1 = client
       const p2 = Object.values(ready)[0]
       delete ready[p2.id]
-      const gameId = p1.id + p2.id
+      const gameId = p1.id
 
       games[gameId] = {
-        1: p1,
-        2: p2,
+        players: [
+          0,
+          p1,
+          p2,
+        ],
         game: deal(),
         turn: 1,
+        discard: null,
       }
 
-      p1.emit('go', gameId)
-      p2.emit('go', gameId)
+      games[gameId].players.forEach(p => p && p.emit('go', gameId))
 
       p1.emit('turn')
     }
@@ -81,14 +84,15 @@ io.on('connection', client => {
     console.log(games[gameId].game.length)
   })
 
-  client.on('endTurn', gameId => {
+  client.on('endTurn', ({ gameId, discard }) => {
     let turn = games[gameId].turn + 1
     if (turn > 2) {
       turn = 1
     }
     const game = games[gameId]
     game.turn = turn
-    game[game.turn].emit('turn')
+    game.players[turn].emit('turn')
+    games[gameId].players.forEach(p => p && p.emit('discard', discard))
   })
 
   client.on('disconnect', () => {

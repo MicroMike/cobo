@@ -54,6 +54,10 @@
   margin: 10px;
 }
 
+.drawnCard {
+  border-color: green;
+}
+
 .selected {
   border-color: red;
 }
