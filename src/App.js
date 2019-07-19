@@ -26,7 +26,7 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    const client = socket('https://g-cobo.herokuapp.com:5000');
+    const client = socket('http://172.16.248.206:5000');
 
     client.on('ping', id => {
       this.clientId = id
