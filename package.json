@@ -13,6 +13,7 @@
     "socket.io-client": "^2.2.0"
   },
   "scripts": {
+    "push": "git add . && git commit -m 'c' && git push",
     "dev": "concurrently \"npm run start\" \"cd server && nodemon index\"",
     "start": "react-scripts start",
     "build": "react-scripts build",

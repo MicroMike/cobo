@@ -45,6 +45,7 @@ const draw = (gameId) => {
 }
 
 io.on('connection', client => {
+  console.log('connected')
   client.emit('ping', client.id)
   client.on('ready', () => {
     if (Object.values(ready).length > 0) {
