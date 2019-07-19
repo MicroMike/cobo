@@ -71,7 +71,6 @@ const draw = (gameId) => {
 }
 
 io.on('connection', client => {
-  console.log('connected')
   client.emit('ping', client.id)
   client.on('ready', () => {
     if (Object.values(ready).length > 0) {
@@ -93,7 +92,10 @@ io.on('connection', client => {
 
       games[gameId].players.forEach(p => p && p.emit('go', gameId))
 
-      p1.emit('turn')
+      setTimeout(() => {
+        games[gameId].players.forEach(p => p && p.emit('hide'))
+        games[gameId].players[1].emit('turn')
+      }, 1000 * 5);
     }
     else {
       ready[client.id] = client

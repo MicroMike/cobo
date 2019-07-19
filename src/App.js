@@ -54,6 +54,10 @@ class App extends Component {
       this.ss({ discard })
     })
 
+    client.on('hide', () => {
+      this.ss({ hide: true })
+    })
+
     this.client = client
   }
 
