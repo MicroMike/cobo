@@ -23,18 +23,18 @@ const handler = (req, res) => {
 // // Serve static files from the React frontend app
 // app.use(express.static(path.join(__dirname, 'build')))
 
-// Anything that doesn't match the above, send back index.html
-app.get('*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.sendFile(path.join(__dirname + '/build/index.html'))
-})
+
 
 const express = require('express');
 const path = require('path');
 
 const server = express()
   .use(express.static(path.join(__dirname, 'build')))
-  .listen(process.env.PORT, () => console.log(`Listening on ${process.env.PORT}`));
+  .get('*', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.sendFile(path.join(__dirname + '/build/index.html'))
+  })
+  .listen(process.env.PORT, () => console.log(`Listening on ${process.env.PORT}`))
 
 const io = require('socket.io')(server);
 
