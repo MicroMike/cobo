@@ -34,7 +34,7 @@ const path = require('path');
 
 const server = express()
   .use(express.static(path.join(__dirname, 'build')))
-  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+  .listen(process.env.PORT, () => console.log(`Listening on ${process.env.PORT}`));
 
 const io = require('socket.io')(server);
 
