@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "concurrently": "^4.1.1",
+    "express": "^4.17.1",
     "mongoose": "^5.6.5",
     "nodemon": "^1.19.1",
     "react": "^16.8.6",
@@ -15,7 +16,7 @@
   "scripts": {
     "push": "git add . && git commit -m 'c' && git push",
     "dev": "concurrently \"npm run start\" \"cd server && nodemon index\"",
-    "start": "concurrently \"react-scripts start\" \"node server/index\"",
+    "start:dev": "concurrently \"react-scripts start\" \"node server/index\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
