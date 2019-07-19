@@ -2,11 +2,31 @@ import React, { Component } from 'react';
 import './App.css';
 import socket from 'socket.io-client'
 
-const client = socket('https://g-cobo.herokuapp.com:' + 5000);
-
 class App extends Component {
   constructor(props) {
     super(props)
+
+    this.state = {
+      hand: [],
+      hide: false,
+      currentCard: null,
+      discard: null,
+      draw: false,
+      selected: {},
+      start: true,
+      loading: false,
+      turn: false
+    }
+
+    this.ss = async (params) => {
+      return new Promise(r => {
+        this.setState(params, r())
+      })
+    }
+  }
+
+  async componentDidMount() {
+    const client = socket('/');
 
     client.on('ping', id => {
       this.clientId = id
@@ -34,30 +54,11 @@ class App extends Component {
       this.ss({ discard })
     })
 
-    this.state = {
-      hand: [],
-      hide: false,
-      currentCard: null,
-      discard: null,
-      draw: false,
-      selected: {},
-      start: true,
-      loading: false,
-      turn: false
-    }
-
-    this.ss = async (params) => {
-      return new Promise(r => {
-        this.setState(params, r())
-      })
-    }
-  }
-
-  async componentWillMount() {
+    this.client = client
   }
 
   start() {
-    client.emit('ready')
+    this.client.emit('ready')
     this.ss({ start: false, loading: true })
   }
 
@@ -65,7 +66,7 @@ class App extends Component {
     if (!this.state.turn) { return }
 
     this.ss({ draw: true })
-    client.emit('drawCard', this.gameId)
+    this.client.emit('drawCard', this.gameId)
   }
 
   async throw() {
@@ -76,7 +77,7 @@ class App extends Component {
       turn: false
     })
 
-    client.emit('endTurn', { gameId: this.gameId, discard: this.state.currentCard })
+    this.client.emit('endTurn', { gameId: this.gameId, discard: this.state.currentCard })
   }
 
   async onCardClick(card, index) {
@@ -90,7 +91,7 @@ class App extends Component {
         turn: false,
       })
 
-      client.emit('endTurn', { gameId: this.gameId, discard: card })
+      this.client.emit('endTurn', { gameId: this.gameId, discard: card })
     }
     else {
       this.ss({ selected: this.state.selected.card === card ? {} : { index, card } })
