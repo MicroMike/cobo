@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import socket from 'socket.io-client'
 
-const client = socket('http://127.0.0.1:' + (process.env.PORT || 5000));
+const client = socket('http://127.0.0.1:' + 5000);
 
 class App extends Component {
   constructor(props) {
