@@ -70,6 +70,8 @@ class App extends Component {
     })
 
     client.on('winner', points => {
+      this.ss({ hide: false })
+
       if (this.countPoints() > points) {
         this.ss({ result: 'LOSE' })
       }
