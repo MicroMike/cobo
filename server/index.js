@@ -13,6 +13,7 @@ const handler = (req, res) => {
 const express = require('express');
 const path = require('path');
 const app = express();
+const io = require('socket.io')(app);
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.json()); // support json encoded bodies
@@ -30,7 +31,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/build/index.html'))
 })
 
-const io = require('socket.io')(app);
 
 const nbCard = 13
 const nbSign = ['A', 'B', 'C', 'D']
