@@ -136,7 +136,13 @@ io.on('connection', client => {
 
     game.turn = turn
     game.players[turn].emit('turn')
-    discard && game.players.forEach(p => p && p.emit('discard', discard))
+
+    if (discard) {
+      game.players.forEach(p => p && p.emit('discard', discard))
+    }
+    else {
+      game.players.forEach(p => p && p.emit('cobo'))
+    }
   })
 
   client.on('endGame', () => {

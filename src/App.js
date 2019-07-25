@@ -18,6 +18,7 @@ class App extends Component {
       turn: false,
       end: false,
       result: null,
+      cobo: false,
     }
 
     this.ss = async (params) => {
@@ -69,14 +70,18 @@ class App extends Component {
       this.ss({ discard: null })
     })
 
+    client.on('cobo', () => {
+      this.ss({ cobo: true })
+    })
+
     client.on('winner', points => {
       this.ss({ hide: false })
 
       if (this.countPoints() > points) {
-        this.ss({ result: 'LOSE' })
+        this.ss({ result: `LOSE (${this.countPoints()}/${points})` })
       }
       else {
-        this.ss({ result: 'WIN' })
+        this.ss({ result: `WIN (${this.countPoints()})` })
       }
     })
 
@@ -100,7 +105,7 @@ class App extends Component {
   async endTurn(discard) {
     await this.ss({
       draw: false,
-      turn: false
+      turn: false,
     })
 
     this.client.emit('endTurn', {
@@ -202,7 +207,7 @@ class App extends Component {
       {!this.state.start && !this.state.loading &&
         <div className="game">
           <div className="game_actions">
-            <button disabled={!this.state.turn} onClick={() => this.end()}>COBO</button>
+            <button disabled={this.state.cobo || this.state.draw || !this.state.turn} onClick={() => this.end()}>COBO</button>
             <button disabled={this.state.draw || !this.state.turn} onClick={() => this.draw()}>DRAW</button>
             {this.renderDiscard()}
           </div>

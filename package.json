@@ -5,8 +5,6 @@
   "dependencies": {
     "concurrently": "^4.1.1",
     "express": "^4.17.1",
-    "mongoose": "^5.6.5",
-    "nodemon": "^1.19.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
@@ -15,7 +13,7 @@
   },
   "scripts": {
     "push": "git add . && git commit -m 'c' && git push",
-    "dev": "npm run build && npm start",
+    "dev": "npm run build && nodemon index",
     "start": "node index",
     "build": "react-scripts build",
     "test": "react-scripts test",
